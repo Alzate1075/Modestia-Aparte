@@ -1,7 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "./AuthContext"; // importa la función que acabamos de agregar
-
+import { useAuth } from "./AuthContext";
 export default function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
 

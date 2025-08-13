@@ -8,7 +8,7 @@ export default function ShoppingCart() {
   return (
     <CartProvider>
       <Navbar />
-      <main className="min-h-screen bg-gray-300 mt-20 p-6">
+      <main className="min-h-[70vh] bg-gray-300 mt-20 p-6">
         <h1 className="text-center font-serif text-black text-4xl mb-8">
           CARRITO DE COMPRAS
         </h1>

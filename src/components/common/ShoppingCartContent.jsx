@@ -30,7 +30,7 @@ export default function ShoppingCartContent() {
   return (
     <div className="w-full max-w-5xl mx-auto bg-white rounded shadow">
       {/* Header */}
-      <div className="flex items-center gap-2 border-b p-6 bg-gray-50 font-semibold text-gray-700 text-lg">
+      <div className="flex items-center gap-2 border-b p-6 bg-black font-semibold text-white text-lg">
         <ShoppingBag className="h-5 w-5" />
         Carrito de Compras ({getTotalItems()}{" "}
         {getTotalItems() === 1 ? "artículo" : "artículos"})
@@ -39,7 +39,7 @@ export default function ShoppingCartContent() {
       {/* Tabla */}
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-100">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Producto

@@ -3,22 +3,27 @@ import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import emailjs from "emailjs-com";
 import { toast } from "react-toastify";
+import { useAuth } from "../context/AuthContext"; // ✅ Importa tu AuthContext
 
 export default function Contacts() {
+  const { user } = useAuth(); // ✅ Obtener usuario actual
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     title: "",
     message: "",
-    file: null, // 🔹 Nuevo para archivo
+    file: null,
   });
 
   useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem("user"));
-    if (savedUser?.name) {
-      setFormData((prev) => ({ ...prev, name: savedUser.name }));
+    if (user?.name && user?.lastName) {
+      setFormData((prev) => ({
+        ...prev,
+        name: `${user.name} ${user.lastName}`, // ✅ Nombre completo
+        email: user.email || "",
+      }));
     }
-  }, []);
+  }, [user]);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -33,9 +38,7 @@ export default function Contacts() {
     e.preventDefault();
 
     const formDataToSend = new FormData(e.target);
-    if (formData.file) {
-      formDataToSend.append("file", formData.file);
-    }
+    if (formData.file) formDataToSend.append("file", formData.file);
 
     emailjs
       .sendForm(
@@ -47,16 +50,16 @@ export default function Contacts() {
       .then(
         () => {
           toast.success("✅ Mensaje enviado con éxito");
-          setFormData({
-            name: formData.name,
+          setFormData((prev) => ({
+            ...prev,
             email: "",
             title: "",
             message: "",
             file: null,
-          });
+          }));
         },
         (error) => {
-          alert("❌ Error al enviar: " + error.text);
+          toast.error("❌ Error al enviar: " + error.text);
         }
       );
   };
@@ -70,7 +73,7 @@ export default function Contacts() {
         <form
           onSubmit={handleSubmit}
           className="bg-gray-100 shadow-xl rounded-lg p-6 w-full max-w-lg mb-10"
-          encType="multipart/form-data" // 🔹 Necesario para archivo
+          encType="multipart/form-data"
         >
           {/* Nombre */}
           <div className="mb-4">
@@ -133,7 +136,6 @@ export default function Contacts() {
           </div>
 
           {/* Archivo */}
-          {/* Archivo adjunto */}
           <div className="mb-4">
             <label className="block text-gray-700 font-semibold mb-2">
               Archivo adjunto
@@ -144,7 +146,6 @@ export default function Contacts() {
               onChange={(e) => {
                 const file = e.target.files[0];
                 if (file && file.size > 50000) {
-                  // 50 KB máximo
                   alert("⚠ El archivo es muy grande (máx. 50KB).");
                   e.target.value = "";
                   return;
@@ -165,7 +166,6 @@ export default function Contacts() {
             </span>
           </div>
 
-          {/* Botón enviar */}
           <button
             type="submit"
             className="cursor-pointer bg-black text-white font-bold py-2 px-4 rounded hover:bg-gray-800"
@@ -173,31 +173,6 @@ export default function Contacts() {
             Enviar mensaje
           </button>
         </form>
-        {/* Redes sociales */}
-        <div className="w-full max-w-lg bg-gray-100 shadow-xl rounded-lg p-4 flex justify-around items-center mt-[-20px] mb-10">
-          {[
-            { src: "/Contacto/Facebook.png", alt: "Facebook", link: "#" },
-            { src: "/Contacto/instagram.png", alt: "Instagram", link: "#" },
-            { src: "/Contacto/Tiktok.png", alt: "TikTok", link: "#" },
-            { src: "/Contacto/Whats-up.png", alt: "WhatsApp", link: "#" },
-            { src: "/Contacto/Youtube.png", alt: "YouTube", link: "#" },
-            { src: "/Contacto/Email.png", alt: "Email", link: "#" },
-          ].map((icon, index) => (
-            <a
-              key={index}
-              href={icon.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-transform transform hover:scale-110"
-            >
-              <img
-                src={icon.src}
-                alt={icon.alt}
-                className="w-10 h-10 object-contain"
-              />
-            </a>
-          ))}
-        </div>
       </div>
       <Footer />
     </div>

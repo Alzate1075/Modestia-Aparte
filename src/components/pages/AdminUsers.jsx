@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { db } from "../../type/firebase/firebaseConfig";
+import { toast } from "react-toastify";
+
 import {
   collection,
   getDocs,
@@ -37,7 +39,7 @@ export default function AdminUsers() {
       fetchUsers();
     } catch (error) {
       console.error("Error deleting user:", error);
-      alert("Error al eliminar usuario");
+      toast.error("Error al eliminar usuario");
     }
   };
 
@@ -59,7 +61,7 @@ export default function AdminUsers() {
       fetchUsers();
     } catch (error) {
       console.error("Error updating user:", error);
-      alert("Error al guardar cambios");
+      toast.error("Error al guardar cambios");
     }
   };
 

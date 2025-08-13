@@ -1,29 +1,30 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { auth, db } from "../../type/firebase/firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 
 export const AuthContext = createContext();
+export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(
-    JSON.parse(localStorage.getItem("user")) || null
-  );
+  const [user, setUser] = useState(null); // Usuario con info completa
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const userRef = doc(db, "users", firebaseUser.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const userData = { id: firebaseUser.uid, ...userSnap.data() };
-          setUser(userData);
-          localStorage.setItem("user", JSON.stringify(userData));
+        // Obtener datos adicionales de Firestore
+        const docRef = doc(db, "users", firebaseUser.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setUser({ ...firebaseUser, ...docSnap.data() }); // Incluye role
+        } else {
+          // Si no existe en Firestore, crear registro por defecto
+          setUser({ ...firebaseUser, role: "user" });
         }
       } else {
         setUser(null);
-        localStorage.removeItem("user");
       }
       setLoading(false);
     });
@@ -31,14 +32,11 @@ export const AuthProvider = ({ children }) => {
     return () => unsubscribe();
   }, []);
 
+  const logout = () => signOut(auth);
+
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
-      {children}
+    <AuthContext.Provider value={{ user, logout }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
-
-// **Esta es la función que estabas importando pero no exportando**
-export function useAuth() {
-  return useContext(AuthContext);
-}

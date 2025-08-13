@@ -1,32 +1,75 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
+import { useAuth } from "./AuthContext";
+import { db } from "../../type/firebase/firebaseConfig";
+import { toast } from "react-toastify";
+
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  arrayRemove,
+} from "firebase/firestore";
 
 const FavoritesContext = createContext();
 
-export function FavoritesProvider({ children }) {
-  const [favorites, setFavorites] = useState(() => {
-    // Guardar en localStorage para mantener favoritos al recargar
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("favorites");
-      return stored ? JSON.parse(stored) : [];
-    }
-    return [];
-  });
+export const FavoritesProvider = ({ children }) => {
+  const { user } = useAuth();
+  const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
-  }, [favorites]);
+    if (!user) {
+      setFavorites([]);
+      return;
+    }
 
-  const toggleFavorite = (product) => {
-    setFavorites((prev) => {
-      const exists = prev.find((fav) => fav.id === product.id);
-      if (exists) return prev.filter((fav) => fav.id !== product.id);
-      return [...prev, product];
-    });
+    const loadFavorites = async () => {
+      try {
+        const docRef = doc(db, "favorites", user.uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setFavorites(docSnap.data().items || []);
+        } else {
+          await setDoc(docRef, { items: [] });
+          setFavorites([]);
+        }
+      } catch (error) {
+        console.error("Error cargando favoritos:", error);
+      }
+    };
+
+    loadFavorites();
+  }, [user]);
+
+  const toggleFavorite = async (item) => {
+    if (!user)
+      return toast.error("Debes iniciar sesión para agregar favoritos");
+
+    const docRef = doc(db, "favorites", user.uid);
+    let updatedFavorites;
+
+    if (favorites.some((fav) => fav.id === item.id)) {
+      updatedFavorites = favorites.filter((fav) => fav.id !== item.id);
+      try {
+        await updateDoc(docRef, { items: arrayRemove(item) });
+      } catch (error) {
+        console.error("Error quitando favorito:", error);
+      }
+    } else {
+      updatedFavorites = [...favorites, item];
+      try {
+        await updateDoc(docRef, { items: arrayUnion(item) });
+      } catch (error) {
+        console.error("Error agregando favorito:", error);
+      }
+    }
+
+    setFavorites(updatedFavorites);
   };
 
-  const isFavorite = (productId) => {
-    return favorites.some((fav) => fav.id === productId);
-  };
+  const isFavorite = (id) => favorites.some((fav) => fav.id === id);
 
   return (
     <FavoritesContext.Provider
@@ -35,11 +78,6 @@ export function FavoritesProvider({ children }) {
       {children}
     </FavoritesContext.Provider>
   );
-}
+};
 
-export function useFavorites() {
-  const context = useContext(FavoritesContext);
-  if (!context)
-    throw new Error("useFavorites must be used within a FavoritesProvider");
-  return context;
-}
+export const useFavorites = () => useContext(FavoritesContext);

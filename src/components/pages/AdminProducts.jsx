@@ -3,6 +3,7 @@ import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { toast } from "react-toastify";
 import { db } from "../../type/firebase/firebaseConfig";
+
 import {
   collection,
   getDocs,
@@ -55,7 +56,7 @@ export default function AdminProducts() {
       !form.ImgUrl ||
       !form.Categoria
     ) {
-      return alert("Completa todos los campos");
+      return toast.error("Completa todos los campos");
     }
 
     try {
@@ -79,7 +80,7 @@ export default function AdminProducts() {
         Categoria: "",
       });
     } catch (error) {
-      alert("Error al crear producto: " + error.message);
+      toast.error("Error al crear producto: " + error.message);
     }
   };
 
@@ -99,7 +100,7 @@ export default function AdminProducts() {
       !form.ImgUrl ||
       !form.Categoria
     ) {
-      return alert("Completa todos los campos");
+      return toast.error("Completa todos los campos");
     }
 
     try {

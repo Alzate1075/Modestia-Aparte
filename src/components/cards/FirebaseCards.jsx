@@ -6,13 +6,18 @@ import SkeletonCard from "../loading/SkeletonCard";
 import { useCart, CartProvider } from "../context/CartContext";
 
 function CardsContent({ productos, favorites, toggleFavorite }) {
-  const { addToCart } = useCart();
+  const { cartItems, addToCart, removeFromCart } = useCart();
 
   const isFavorite = (id) => favorites.some((item) => item.id === id);
+  const isInCart = (id) => cartItems.some((item) => item.id === id);
 
-  const handleAddToCart = (producto) => {
-    addToCart(producto);
-    console.log("Agregado al carrito:", producto);
+  const handleCartToggle = (producto) => {
+    if (isInCart(producto.id)) {
+      removeFromCart(producto.id);
+    } else {
+      addToCart(producto);
+      console.log("Agregado al carrito:", producto);
+    }
   };
 
   return (
@@ -20,7 +25,9 @@ function CardsContent({ productos, favorites, toggleFavorite }) {
       {productos.map((producto) => (
         <div
           key={producto.id}
-          className="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col h-[450px] w-full max-w-[250px] mx-auto relative"
+          className={`rounded-xl shadow-lg overflow-hidden flex flex-col h-[450px] w-full max-w-[350px] mx-auto relative transition-colors duration-300 ${
+            isInCart(producto.id) ? "bg-orange-300" : "bg-white"
+          }`}
         >
           {/* FAVORITOS Y CARRITO */}
           <div className="absolute top-2 right-2 flex space-x-2 z-10">
@@ -32,8 +39,8 @@ function CardsContent({ productos, favorites, toggleFavorite }) {
               {isFavorite(producto.id) ? "❤️" : "🤍"}
             </button>
             <button
-              onClick={() => handleAddToCart(producto)}
-              className="text-lg bg-orange-300 rounded-full p-1 shadow-md hover:scale-110 transition"
+              onClick={() => handleCartToggle(producto)}
+              className="text-lg bg-purple-300 rounded-full p-1 shadow-md hover:scale-110 transition"
               title="Agregar al carrito"
             >
               🛒
@@ -41,7 +48,11 @@ function CardsContent({ productos, favorites, toggleFavorite }) {
           </div>
 
           {/* IMAGENES CARDS */}
-          <div className="w-full h-[70%] flex items-center justify-center pt-4 bg-white">
+          <div
+            className={`w-full h-[70%] flex items-center justify-center pt-4 ${
+              isInCart(producto.id) ? "bg-orange-300" : "bg-transparent"
+            }`}
+          >
             <img
               src={producto.ImgUrl}
               alt={producto.Nombre}
@@ -50,12 +61,16 @@ function CardsContent({ productos, favorites, toggleFavorite }) {
           </div>
 
           {/* DESCRIPCIÓN */}
-          <div className="p-3 flex-1 flex flex-col text-center md:text-start justify-between">
+          <div
+            className={`p-3 flex-1 flex flex-col text-center md:text-start justify-between ${
+              isInCart(producto.id) ? "bg-orange-300" : "bg-transparent"
+            }`}
+          >
             <div>
-              <h2 className="text-sm font-bold text-gray-800 mb-1 break-words">
+              <h2 className="text-md font-bold text-gray-800 mb-1 break-words">
                 {producto.Nombre}
               </h2>
-              <p className="text-xs text-gray-600 leading-tight">
+              <p className="text-sm text-gray-600 leading-tight">
                 {producto.Descripcion}
               </p>
             </div>
