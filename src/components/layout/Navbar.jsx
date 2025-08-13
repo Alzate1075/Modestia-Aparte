@@ -1,74 +1,81 @@
-import React from "react";
-import { Heart, ShoppingCart } from "lucide-react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useFavorites } from "../context/FavoritesContext";
+import { Link, useNavigate } from "react-router-dom";
+import { Heart, ShoppingCart } from "lucide-react";
 import { toast } from "react-toastify";
+import FavoriteProducts from "../pages/FavoriteProducts"; // Asegúrate que esté correcto
 import MenuBurguer from "./MenuBurguer";
 
 export default function Navbar() {
-  const navigate = useNavigate();
   const { user } = useAuth();
+  const { favorites } = useFavorites();
+  const navigate = useNavigate();
+  const [openFavoritesModal, setOpenFavoritesModal] = useState(false);
 
-  const handleProtectedRoute = (ruta) => {
-    if (user) {
-      navigate(ruta);
-    } else {
-      toast.warning("Debes iniciar sesión para acceder a esta función.");
-      navigate("/login");
+  const handleOpenFavorites = () => {
+    if (!favorites || favorites.length === 0) {
+      toast.warning("No tienes favoritos seleccionados");
+      return;
     }
+    setOpenFavoritesModal(true);
   };
 
   return (
-    <nav className="fixed top-0 w-full bg-black border-b z-50 shadow-xl">
-      <div className="mx-8">
-        <div className="flex justify-between items-center h-20">
-          {/* LOGO */}
-          <Link to="/" className="flex items-center space-x-2 gap-6">
-            <img src="/LogosMA/LogoMA2.2.png" alt="Logo MA" className="h-16" />
-            <h1 className="text-4xl font-serif text-white">Modestia Aparte</h1>
-          </Link>
+    <>
+      <nav className="fixed top-0 w-full bg-black border-b z-50 shadow-xl">
+        <div className="mx-8">
+          <div className="flex justify-between items-center h-20">
+            <Link to="/" className="flex items-center gap-6">
+              <img
+                src="/LogosMA/LogoMA2.2.png"
+                alt="Logo MA"
+                className="h-16"
+              />
+              <h1 className="text-4xl font-serif text-white">
+                Modestia Aparte
+              </h1>
+            </Link>
 
-          {/* ICONOS */}
-          <div className="relative flex items-center space-x-4">
-            {/* BOTÓN LOGIN / NOMBRE */}
-            {!user ? (
+            <div className="flex items-center space-x-4">
+              {!user ? (
+                <button
+                  onClick={() => navigate("/login")}
+                  className="text-white px-4 py-2 rounded hover:bg-pink-600 transition-colors"
+                >
+                  Log In
+                </button>
+              ) : (
+                <span className="text-white px-4 py-2">
+                  Hola,{" "}
+                  {user.displayName ||
+                    `${user.name || ""} ${user.lastName || ""}`}
+                </span>
+              )}
+
               <button
-                onClick={() => navigate("/login")}
-                className="cursor-pointer text-white px-4 py-2 text-lg rounded hover:bg-pink-600 transition-colors duration-200"
+                onClick={handleOpenFavorites}
+                className="hover:bg-pink-600 p-2 rounded transition-colors"
               >
-                Log In
+                <Heart className="h-6 w-6 text-white" />
               </button>
-            ) : (
-              <span className="text-white px-4 py-2 text-lg">
-                Hola,{" "}
-                {user.displayName ||
-                  (user.name && user.lastName
-                    ? `${user.name} ${user.lastName}`
-                    : user.email)}
-              </span>
-            )}
 
-            {/* BOTÓN LIKE */}
-            <button
-              onClick={() => handleProtectedRoute("/favoritos")}
-              className="cursor-pointer hover:bg-pink-600 p-2 rounded transition-colors duration-200"
-            >
-              <Heart className="h-6 w-6 text-white" />
-            </button>
+              <button
+                onClick={() => navigate("/carrito")}
+                className="hover:bg-pink-600 p-2 rounded transition-colors"
+              >
+                <ShoppingCart className="h-6 w-6 text-white" />
+              </button>
 
-            {/* CARRITO */}
-            <button
-              onClick={() => handleProtectedRoute("/carrito")}
-              className="cursor-pointer hover:bg-pink-600 p-2 rounded transition-colors duration-200"
-            >
-              <ShoppingCart className="h-6 w-6 text-white" />
-            </button>
-
-            {/* MENÚ HAMBURGUESA */}
-            <MenuBurguer />
+              <MenuBurguer />
+            </div>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {openFavoritesModal && (
+        <FavoriteProducts onClose={() => setOpenFavoritesModal(false)} />
+      )}
+    </>
   );
 }

@@ -1,36 +1,45 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 const FavoritesContext = createContext();
 
-export const useFavorites = () => {
-  return useContext(FavoritesContext);
-};
-
-export const FavoritesProvider = ({ children }) => {
-  const [favorites, setFavorites] = useState([]);
-
-  const addFavorite = (item) => {
-    setFavorites((prev) => [...prev, item]);
-  };
-
-  const removeFavorite = (id) => {
-    setFavorites((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const toggleFavorite = (item) => {
-    const exists = favorites.some((fav) => fav.id === item.id);
-    if (exists) {
-      removeFavorite(item.id);
-    } else {
-      addFavorite(item);
+export function FavoritesProvider({ children }) {
+  const [favorites, setFavorites] = useState(() => {
+    // Guardar en localStorage para mantener favoritos al recargar
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("favorites");
+      return stored ? JSON.parse(stored) : [];
     }
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("favorites", JSON.stringify(favorites));
+  }, [favorites]);
+
+  const toggleFavorite = (product) => {
+    setFavorites((prev) => {
+      const exists = prev.find((fav) => fav.id === product.id);
+      if (exists) return prev.filter((fav) => fav.id !== product.id);
+      return [...prev, product];
+    });
+  };
+
+  const isFavorite = (productId) => {
+    return favorites.some((fav) => fav.id === productId);
   };
 
   return (
     <FavoritesContext.Provider
-      value={{ favorites, addFavorite, removeFavorite, toggleFavorite }}
+      value={{ favorites, toggleFavorite, isFavorite }}
     >
       {children}
     </FavoritesContext.Provider>
   );
-};
+}
+
+export function useFavorites() {
+  const context = useContext(FavoritesContext);
+  if (!context)
+    throw new Error("useFavorites must be used within a FavoritesProvider");
+  return context;
+}

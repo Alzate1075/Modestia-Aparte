@@ -21,20 +21,26 @@ export default function AdminUsers() {
   });
 
   const fetchUsers = async () => {
-    const snapshot = await getDocs(collection(db, "users"));
-    const usersList = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setUsers(usersList);
+    try {
+      const snapshot = await getDocs(collection(db, "users"));
+      const usersList = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      setUsers(usersList);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
   };
 
   const deleteUser = async (id) => {
-    await deleteDoc(doc(db, "users", id));
-    fetchUsers();
+    if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
+    try {
+      await deleteDoc(doc(db, "users", id));
+      fetchUsers();
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      alert("Error al eliminar usuario");
+    }
   };
 
-  // Iniciar edición
   const handleEditClick = (user) => {
     setEditingUserId(user.id);
     setFormData({
@@ -45,11 +51,16 @@ export default function AdminUsers() {
     });
   };
 
-  // Guardar edición
   const handleSaveEdit = async () => {
-    await updateDoc(doc(db, "users", editingUserId), formData);
-    setEditingUserId(null);
-    fetchUsers();
+    if (!editingUserId) return;
+    try {
+      await updateDoc(doc(db, "users", editingUserId), formData);
+      setEditingUserId(null);
+      fetchUsers();
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("Error al guardar cambios");
+    }
   };
 
   useEffect(() => {
@@ -57,113 +68,144 @@ export default function AdminUsers() {
   }, []);
 
   return (
-    <div>
-      <Navbar />
-      <div className="min-h-[70vh] mt-28 px-8">
-        <h1 className="text-black font-serif text-4xl mb-6">
+    <div className="mt-20 bg-gray-300 min-h-screen flex flex-col">
+      {/* Navbar fijo */}
+      <div className="sticky top-0 z-50">
+        <Navbar />
+      </div>
+
+      {/* Contenido centrado; py ajustado para bajar el título */}
+      <div className="flex-1 flex flex-col items-center px-4 py-10">
+        <h1 className="text-black font-serif text-5xl mb-8 text-center">
           Administrar Usuarios
         </h1>
-        <table className="w-full border border-collapse border-gray-300">
-          <thead>
-            <tr className="bg-gray-200">
-              <th className="p-2 text-center align-middle">Nombre</th>
-              <th className="p-2 text-center align-middle">Apellido</th>
-              <th className="p-2 text-center align-middle">Email</th>
-              <th className="p-2 text-center align-middle">Rol</th>
-              <th className="p-2 text-center align-middle">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((u) => (
-              <tr key={u.id} className="border-b border-gray-300">
-                {editingUserId === u.id ? (
-                  <>
-                    <td className="p-2 text-center align-middle">
-                      <input
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
-                        className="border p-1 border-gray-300 w-full"
-                      />
-                    </td>
-                    <td className="p-2 text-center align-middle">
-                      <input
-                        type="text"
-                        value={formData.lastName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, lastName: e.target.value })
-                        }
-                        className="border p-1 border-gray-300 w-full"
-                      />
-                    </td>
-                    <td className="p-2 text-center align-middle">
-                      <input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          setFormData({ ...formData, email: e.target.value })
-                        }
-                        className="border p-1 border-gray-300 w-full"
-                      />
-                    </td>
-                    <td className="p-2 text-center align-middle">
-                      <select
-                        value={formData.role}
-                        onChange={(e) =>
-                          setFormData({ ...formData, role: e.target.value })
-                        }
-                        className="border p-1 border-gray-300 w-full"
-                      >
-                        <option value="user">usuario</option>
-                        <option value="admin">admin</option>
-                      </select>
-                    </td>
-                    <td className="p-2 text-center align-middle">
-                      <button
-                        onClick={handleSaveEdit}
-                        className="cursor-pointer bg-green-500 text-white font-semibold text-lg px-2 py-1 rounded mr-2"
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        onClick={() => setEditingUserId(null)}
-                        className="cursor-pointer bg-gray-500 text-white font-semibold text-lg px-2 py-1 rounded"
-                      >
-                        Cancelar
-                      </button>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td className="p-2 text-center align-middle">{u.name}</td>
-                    <td className="p-2 text-center align-middle">
-                      {u.lastName}
-                    </td>
-                    <td className="p-2 text-center align-middle">{u.email}</td>
-                    <td className="p-2 text-center align-middle">{u.role}</td>
-                    <td className="p-2 text-center align-middle">
-                      <button
-                        onClick={() => handleEditClick(u)}
-                        className="cursor-pointer bg-black text-white font-semibold text-lg px-2 py-1 rounded mr-2"
-                      >
-                        Editar
-                      </button>
-                      <button
-                        onClick={() => deleteUser(u.id)}
-                        className="cursor-pointer bg-red-600 text-white font-semibold text-lg px-2 py-1 rounded"
-                      >
-                        Eliminar
-                      </button>
-                    </td>
-                  </>
-                )}
+
+        {/* Contenedor de tabla: más estrecho y responsive */}
+        <div
+          className="overflow-x-auto overflow-y-auto max-h-[90vh] shadow-xl
+                        w-full sm:w-[90%] md:w-[75%] lg:w-[80%] xl:w-[70%] rounded-lg bg-white"
+        >
+          <table className="w-full border border-collapse border-gray-200">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-black text-white text-lg font-serif">
+                <th className="p-3 text-center sticky top-0 bg-black">
+                  Nombre
+                </th>
+                <th className="p-3 text-center sticky top-0 bg-black">
+                  Apellido
+                </th>
+                <th className="p-3 text-center sticky top-0 bg-black">Email</th>
+                <th className="p-3 text-center sticky top-0 bg-black">Rol</th>
+                <th className="p-3 text-center sticky top-0 bg-black">
+                  Acciones
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="p-4 text-center text-gray-600">
+                    No hay usuarios.
+                  </td>
+                </tr>
+              )}
+
+              {users.map((u) => (
+                <tr key={u.id} className="bg-gray-100 border-b">
+                  {editingUserId === u.id ? (
+                    <>
+                      <td className="p-2 align-middle">
+                        <input
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                          }
+                          className="border p-1 border-gray-300 w-full rounded"
+                        />
+                      </td>
+                      <td className="p-2 align-middle">
+                        <input
+                          type="text"
+                          value={formData.lastName}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              lastName: e.target.value,
+                            })
+                          }
+                          className="border p-1 border-gray-300 w-full rounded"
+                        />
+                      </td>
+                      <td className="p-2 align-middle">
+                        <input
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) =>
+                            setFormData({ ...formData, email: e.target.value })
+                          }
+                          className="border p-1 border-gray-300 w-full rounded"
+                        />
+                      </td>
+                      <td className="p-2 align-middle">
+                        <select
+                          value={formData.role}
+                          onChange={(e) =>
+                            setFormData({ ...formData, role: e.target.value })
+                          }
+                          className="border p-1 border-gray-300 w-full rounded"
+                        >
+                          <option value="user">usuario</option>
+                          <option value="admin">admin</option>
+                        </select>
+                      </td>
+                      <td className="p-2 text-center align-middle">
+                        <button
+                          onClick={handleSaveEdit}
+                          className="cursor-pointer bg-green-500 text-white font-semibold text-sm px-3 py-1 rounded mr-2"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          onClick={() => setEditingUserId(null)}
+                          className="cursor-pointer bg-gray-500 text-white font-semibold text-sm px-3 py-1 rounded"
+                        >
+                          Cancelar
+                        </button>
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="p-3 text-left align-middle">{u.name}</td>
+                      <td className="p-3 text-left align-middle">
+                        {u.lastName}
+                      </td>
+                      <td className="p-3 text-left align-middle">{u.email}</td>
+                      <td className="p-3 text-left align-middle">{u.role}</td>
+                      <td className="p-3 text-center align-middle">
+                        <button
+                          onClick={() => handleEditClick(u)}
+                          className="cursor-pointer bg-black text-white font-semibold text-sm px-3 py-1 rounded mr-2"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => deleteUser(u.id)}
+                          className="cursor-pointer bg-red-600 text-white font-semibold text-sm px-3 py-1 rounded"
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
       <Footer />
     </div>
   );

@@ -1,17 +1,20 @@
 import React from "react";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
+import { CartProvider } from "../context/CartContext";
+import ShoppingCartContent from "../common/ShoppingCartContent";
 
 export default function ShoppingCart() {
   return (
-    <div>
+    <CartProvider>
       <Navbar />
-      <div className="min-h-screen bg-gray-300 mt-20">
-        <h1 className="flex text-center font-serif justify-center text-black text-4xl mt-6 p-4">
+      <main className="min-h-screen bg-gray-300 mt-20 p-6">
+        <h1 className="text-center font-serif text-black text-4xl mb-8">
           CARRITO DE COMPRAS
         </h1>
-      </div>
+        <ShoppingCartContent />
+      </main>
       <Footer />
-    </div>
+    </CartProvider>
   );
 }

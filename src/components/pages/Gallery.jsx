@@ -29,7 +29,7 @@ const Gallery = () => {
       setShowGallery(true);
 
       setTimeout(() => {
-        setLoadingSkeletons(false); // termina el loading
+        setLoadingSkeletons(false);
         const gallerySection = document.getElementById("pexels-gallery");
         if (gallerySection) {
           gallerySection.scrollIntoView({ behavior: "smooth" });
@@ -54,7 +54,7 @@ const Gallery = () => {
             <div className="flex justify-center items-center">
               <button
                 onClick={handleVerTodas}
-                className="mt-6 cursor-pointer text-white bg-black font-semibold py-2 px-6 rounded shadow-lg hover:bg-pink-600 transition"
+                className="mt-6 cursor-pointer text-white bg-black font-semibold py-2 px-6 rounded shadow-lg hover:bg-gray-500 transition"
               >
                 Ver Todas
               </button>
@@ -69,7 +69,7 @@ const Gallery = () => {
                 onClick={() => handleCategoryClick(category)}
                 className={`py-2 cursor-pointer px-4 rounded shadow-lg font-semibold ${
                   categoryFirebase === category
-                    ? "bg-yellow-500 text-black"
+                    ? "bg-pink-400 text-black"
                     : "bg-white text-black hover:bg-gray-100"
                 }`}
               >

@@ -1,0 +1,18 @@
+import React from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "./AuthContext"; // importa la función que acabamos de agregar
+
+export default function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    // Puedes mostrar un spinner o texto mientras carga
+    return <div>Cargando...</div>;
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
