@@ -12,12 +12,15 @@ import Footer from "../layout/Footer";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../hooks/useAuth";
+import { Eye, EyeOff } from "lucide-react";
 
 const Login = ({ onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // Para controlar submit
   const navigate = useNavigate();
   const { user, setUser, loading } = useAuth();
 
@@ -27,16 +30,19 @@ const Login = ({ onClose }) => {
     }
   }, [user, loading, navigate]);
 
-  // LOGIN CON CORREO Y CONTRASEÑA
-  const handleEmailLogin = async () => {
+  const handleEmailLogin = async (e) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     if (!email || !password) {
       toast.error("Por favor ingresa correo y contraseña");
+      setIsSubmitting(false);
       return;
     }
 
     try {
       toast.info("Iniciando sesión...", { autoClose: 1000 });
-
       const result = await signInWithEmailAndPassword(auth, email, password);
       const userRef = doc(db, "users", result.user.uid);
       const userSnap = await getDoc(userRef);
@@ -57,7 +63,6 @@ const Login = ({ onClose }) => {
 
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-
       toast.success("Sesión iniciada correctamente");
     } catch (error) {
       let errorMsg = "Error desconocido";
@@ -75,14 +80,14 @@ const Login = ({ onClose }) => {
           errorMsg = error.message;
       }
       toast.error(errorMsg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // LOGIN CON GOOGLE
   const handleGoogleLogin = async () => {
     try {
       toast.info("Conectando con Google...", { autoClose: 1000 });
-
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
       const userRef = doc(db, "users", user.uid);
@@ -104,14 +109,12 @@ const Login = ({ onClose }) => {
 
       setUser(userData);
       localStorage.setItem("user", JSON.stringify(userData));
-
       toast.success("Sesión con Google iniciada correctamente");
     } catch (error) {
       toast.error("Error con Google: " + error.message);
     }
   };
 
-  // ENVIAR EMAIL DE RECUPERACIÓN
   const handleSendResetEmail = async () => {
     if (!resetEmail) {
       toast.error("Por favor ingresa un correo válido");
@@ -147,28 +150,41 @@ const Login = ({ onClose }) => {
             Iniciar Sesión
           </h2>
 
-          <input
-            type="email"
-            placeholder="Correo electrónico"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full mb-3 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-          <input
-            type="password"
-            placeholder="Contraseña"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full mb-3 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
-          />
-          <button
-            onClick={handleEmailLogin}
-            className="cursor-pointer w-full bg-black text-white font-semibold py-2 rounded hover:bg-purple-800 transition"
-          >
-            Iniciar sesión
-          </button>
+          <form onSubmit={handleEmailLogin}>
+            <input
+              type="email"
+              placeholder="Correo electrónico"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full mb-3 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+              required
+            />
+            <div className="relative mb-3">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Contraseña"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
+                required
+              />
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </span>
+            </div>
 
-          {/* Texto Olvidaste tu contraseña */}
+            <button
+              type="submit"
+              className="cursor-pointer w-full bg-black text-white font-semibold py-2 rounded hover:bg-purple-800 transition"
+              disabled={isSubmitting}
+            >
+              Iniciar sesión
+            </button>
+          </form>
+
           <p
             className="mt-3 text-sm text-blue-600 cursor-pointer hover:underline text-center"
             onClick={() => setShowResetModal(true)}
@@ -208,9 +224,8 @@ const Login = ({ onClose }) => {
             Cancelar
           </button>
 
-          {/* Modal recuperación contraseña */}
           {showResetModal && (
-            <div className="fixed inset-0 bg-black/85 bg-opacity-50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50">
               <div className="bg-white rounded p-6 w-full max-w-sm shadow-lg relative">
                 <h3 className="text-xl font-semibold mb-4 text-center">
                   Recuperar contraseña

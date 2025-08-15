@@ -3,6 +3,7 @@ import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { toast } from "react-toastify";
 import { db } from "../../type/firebase/firebaseConfig";
+import Swal from "sweetalert2";
 
 import {
   collection,
@@ -127,21 +128,33 @@ export default function AdminProducts() {
         Categoria: "",
       });
       setIsEditing(false);
+      toast.success("Producto actualizado correctamente");
     } catch (error) {
       toast.error("Error al actualizar producto: " + error.message);
     }
   };
 
-  // Eliminar producto en Firestore
   const handleDelete = async (id) => {
-    if (window.confirm("¿Seguro que quieres eliminar este producto?")) {
-      try {
-        await deleteDoc(doc(db, "Productos", id));
-        setProducts(products.filter((p) => p.id !== id));
-      } catch (error) {
-        toast.error("Error al eliminar producto: " + error.message);
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción eliminará el producto permanentemente",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc(doc(db, "Productos", id));
+          setProducts(products.filter((p) => p.id !== id));
+          Swal.fire("Eliminado", "El producto ha sido eliminado.", "success");
+        } catch (error) {
+          toast.error("Error al eliminar producto: " + error.message);
+        }
       }
-    }
+    });
   };
 
   return (

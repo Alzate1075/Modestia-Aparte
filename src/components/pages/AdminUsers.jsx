@@ -3,6 +3,7 @@ import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { db } from "../../type/firebase/firebaseConfig";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 import {
   collection,
@@ -32,15 +33,28 @@ export default function AdminUsers() {
     }
   };
 
-  const deleteUser = async (id) => {
-    if (!confirm("¿Seguro que deseas eliminar este usuario?")) return;
-    try {
-      await deleteDoc(doc(db, "users", id));
-      fetchUsers();
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      toast.error("Error al eliminar usuario");
-    }
+  const handleDelete = async (id) => {
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción eliminará el usuario permanentemente",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          await deleteDoc(doc(db, "users", id)); // <-- nombre correcto de la colección
+          setUsers(users.filter((u) => u.id !== id));
+          Swal.fire("Eliminado", "El usuario ha sido eliminado.", "success");
+        } catch (error) {
+          toast.error("Error al eliminar usuario: " + error.message);
+          console.error("Error al eliminar usuario:", error);
+        }
+      }
+    });
   };
 
   const handleEditClick = (user) => {
@@ -59,6 +73,7 @@ export default function AdminUsers() {
       await updateDoc(doc(db, "users", editingUserId), formData);
       setEditingUserId(null);
       fetchUsers();
+      toast.success("Usuario actualizado correctamente");
     } catch (error) {
       console.error("Error updating user:", error);
       toast.error("Error al guardar cambios");
@@ -193,7 +208,7 @@ export default function AdminUsers() {
                           Editar
                         </button>
                         <button
-                          onClick={() => deleteUser(u.id)}
+                          onClick={() => handleDelete(u.id)}
                           className="cursor-pointer bg-red-600 text-white font-semibold text-sm px-3 py-1 rounded"
                         >
                           Eliminar
