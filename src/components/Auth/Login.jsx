@@ -1,26 +1,21 @@
 import React, { useState, useEffect } from "react";
-import {
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  sendPasswordResetEmail,
-} from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { auth, provider, db } from "../../type/firebase/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../layout/Navbar";
 import Footer from "../layout/Footer";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../../hooks/useAuth";
 import { Eye, EyeOff } from "lucide-react";
+import ResetPassword from "./ResetPassword";
 
 const Login = ({ onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Para controlar submit
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { user, setUser, loading } = useAuth();
 
@@ -115,32 +110,6 @@ const Login = ({ onClose }) => {
     }
   };
 
-  const handleSendResetEmail = async () => {
-    if (!resetEmail) {
-      toast.error("Por favor ingresa un correo válido");
-      return;
-    }
-    try {
-      await sendPasswordResetEmail(auth, resetEmail);
-      toast.success("Correo de recuperación enviado");
-      setShowResetModal(false);
-      setResetEmail("");
-    } catch (error) {
-      let errorMsg = "Error desconocido";
-      switch (error.code) {
-        case "auth/invalid-email":
-          errorMsg = "Correo inválido";
-          break;
-        case "auth/user-not-found":
-          errorMsg = "Usuario no encontrado";
-          break;
-        default:
-          errorMsg = error.message;
-      }
-      toast.error(errorMsg);
-    }
-  };
-
   return (
     <div>
       <Navbar />
@@ -225,34 +194,7 @@ const Login = ({ onClose }) => {
           </button>
 
           {showResetModal && (
-            <div className="fixed inset-0 bg-black/85 flex items-center justify-center z-50">
-              <div className="bg-white rounded p-6 w-full max-w-sm shadow-lg relative">
-                <h3 className="text-xl font-semibold mb-4 text-center">
-                  Recuperar contraseña
-                </h3>
-                <input
-                  type="email"
-                  placeholder="Ingresa tu correo"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  className="w-full mb-4 px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <div className="flex justify-between">
-                  <button
-                    onClick={() => setShowResetModal(false)}
-                    className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400 transition"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    onClick={handleSendResetEmail}
-                    className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700 transition"
-                  >
-                    Enviar código
-                  </button>
-                </div>
-              </div>
-            </div>
+            <ResetPassword onClose={() => setShowResetModal(false)} />
           )}
         </div>
       </div>
