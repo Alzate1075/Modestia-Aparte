@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+} from "firebase/auth";
 import { auth, provider, db } from "../../type/firebase/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +24,38 @@ const LoginForm = ({ onClose }) => {
 
   useEffect(() => {
     if (!loading && user) navigate("/");
-  }, [user, loading, navigate]);
+
+    // Revisar si viene de signInWithRedirect
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (result) {
+          const gUser = result.user;
+          const userRef = doc(db, "users", gUser.uid);
+          const userSnap = await getDoc(userRef);
+
+          let userData;
+          if (!userSnap.exists()) {
+            userData = {
+              id: gUser.uid,
+              email: gUser.email || "",
+              name: gUser.displayName || "",
+              lastName: "",
+              role: "user",
+            };
+            await setDoc(userRef, userData);
+          } else {
+            userData = { id: gUser.uid, ...userSnap.data() };
+          }
+
+          setUser(userData);
+          localStorage.setItem("user", JSON.stringify(userData));
+          toast.success("Sesión con Google iniciada correctamente");
+        }
+      })
+      .catch((error) => {
+        toast.error("Error en redirección Google: " + error.message);
+      });
+  }, [user, loading, navigate, setUser]);
 
   const handleEmailLogin = async (e) => {
     e.preventDefault();
@@ -77,40 +113,42 @@ const LoginForm = ({ onClose }) => {
   };
 
   const handleGoogleLogin = async () => {
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     try {
-      toast.info("Conectando con Google...", { autoClose: 1000 });
-      const result = await signInWithPopup(auth, provider);
-      const gUser = result.user;
-      const userRef = doc(db, "users", gUser.uid);
-      const userSnap = await getDoc(userRef);
-
-      let userData;
-      if (!userSnap.exists()) {
-        userData = {
-          id: gUser.uid,
-          email: gUser.email || "",
-          name: gUser.displayName || "",
-          lastName: "",
-          role: "user",
-        };
-        await setDoc(userRef, userData);
+      if (isMobile) {
+        await signInWithRedirect(auth, provider);
       } else {
-        userData = { id: gUser.uid, ...userSnap.data() };
-      }
+        const result = await signInWithPopup(auth, provider);
+        const gUser = result.user;
+        const userRef = doc(db, "users", gUser.uid);
+        const userSnap = await getDoc(userRef);
 
-      setUser(userData);
-      localStorage.setItem("user", JSON.stringify(userData));
-      toast.success("Sesión con Google iniciada correctamente");
+        let userData;
+        if (!userSnap.exists()) {
+          userData = {
+            id: gUser.uid,
+            email: gUser.email || "",
+            name: gUser.displayName || "",
+            lastName: "",
+            role: "user",
+          };
+          await setDoc(userRef, userData);
+        } else {
+          userData = { id: gUser.uid, ...userSnap.data() };
+        }
+
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData));
+        toast.success("Sesión con Google iniciada correctamente");
+      }
     } catch (error) {
       toast.error("Error con Google: " + error.message);
     }
   };
 
-  // ---- Clave: captura Enter en inputs y dispara el submit ----
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      // dispara el submit del form de forma fiable
       e.currentTarget.form?.dispatchEvent(
         new Event("submit", { cancelable: true, bubbles: true })
       );
@@ -161,7 +199,6 @@ const LoginForm = ({ onClose }) => {
         >
           Iniciar sesión
         </button>
-        {/* Botón submit fantasma por compatibilidad (no visible) */}
         <button type="submit" className="hidden" aria-hidden="true" />
       </form>
 
@@ -179,7 +216,7 @@ const LoginForm = ({ onClose }) => {
       </div>
 
       <button
-        type="button" // ← importante, evita interferir con Enter
+        type="button"
         onClick={handleGoogleLogin}
         className="cursor-pointer w-full flex items-center justify-center gap-2 border border-gray-300 py-2 rounded hover:bg-gray-200 transition"
       >
@@ -192,7 +229,7 @@ const LoginForm = ({ onClose }) => {
       </button>
 
       <button
-        type="button" // ← importante
+        type="button"
         onClick={() => navigate("/registro")}
         className="w-full mt-4 text-md text-blue-600 hover:underline"
       >
@@ -200,7 +237,7 @@ const LoginForm = ({ onClose }) => {
       </button>
 
       <button
-        type="button" // ← importante
+        type="button"
         onClick={() => (onClose ? onClose() : navigate("/"))}
         className="w-full mt-6 text-md text-gray-400 hover:text-gray-600 text-center"
       >
