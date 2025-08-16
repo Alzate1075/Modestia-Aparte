@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useFavorites } from "../context/FavoritesContext";
-import { useCart } from "../context/CartContext";
+import { useFavorites } from "../components/context/FavoritesContext";
+import { useCart } from "../components/context/CartContext";
 import { useNavigate } from "react-router-dom";
 import { Heart, ShoppingCart, X, Plus, Minus } from "lucide-react";
 import { toast } from "react-toastify";
@@ -21,7 +21,7 @@ export default function FavoriteProducts({ onClose }) {
   const getImage = (p) => p?.image || p?.ImgUrl || p?.img || "/placeholder.svg";
 
   // Si tu Cart espera { id, Nombre, Precio, ImgUrl } lo normalizamos aquí
-  const toCartItem = (p) => ({
+  const toCartItem = (p, quantity = 1) => ({
     id: p?.id,
     Nombre: p?.Nombre || p?.title || p?.name || "Producto",
     Precio:
@@ -31,6 +31,7 @@ export default function FavoriteProducts({ onClose }) {
         ? p.price
         : 0,
     ImgUrl: p?.ImgUrl || p?.image || p?.img || "/placeholder.svg",
+    cantidad: quantity, // 👈 aquí agregamos la cantidad
   });
 
   // ===== Cantidades por producto =====
@@ -66,8 +67,8 @@ export default function FavoriteProducts({ onClose }) {
   // ===== Acciones =====
   const handleAddToCart = (product) => {
     const quantity = getQuantity(product.id);
-    const cartItem = toCartItem(product);
-    addToCart(cartItem, quantity);
+    const cartItem = toCartItem(product, quantity);
+    addToCart(cartItem); // 👈 ahora solo pasamos el objeto con cantidad incluida
     toast.success(`${getTitle(product)} (${quantity}) agregado al carrito`);
   };
 
@@ -76,8 +77,7 @@ export default function FavoriteProducts({ onClose }) {
     toast.info(`${getTitle(product)} eliminado de favoritos`);
   };
 
-  const handleImageClick = (product) => {
-    // Cierra el modal y navega a la galería (ajusta si tienes /galeria/:id)
+  const handleImageClick = () => {
     onClose?.();
     navigate("/galeria");
   };

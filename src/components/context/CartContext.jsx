@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
 import { db } from "../../type/firebase/firebaseConfig";
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 
 // Crear contexto
 const CartContext = createContext();
@@ -68,6 +68,8 @@ export const CartProvider = ({ children }) => {
   const addToCart = (product) => {
     if (!user) return alert("Debes iniciar sesión para agregar al carrito");
 
+    const quantityToAdd = product.cantidad || 1; // 👈 usar cantidad del producto
+
     setCartItems((prev) => {
       const existingItem = prev.find((item) => item.id === product.id);
       let updatedCart;
@@ -75,11 +77,11 @@ export const CartProvider = ({ children }) => {
       if (existingItem) {
         updatedCart = prev.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + quantityToAdd } // 👈 sumamos la cantidad real
             : item
         );
       } else {
-        updatedCart = [...prev, { ...product, quantity: 1 }];
+        updatedCart = [...prev, { ...product, quantity: quantityToAdd }]; // 👈 agregamos con cantidad correcta
       }
 
       saveCartToFirebase(updatedCart);

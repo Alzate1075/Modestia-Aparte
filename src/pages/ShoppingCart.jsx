@@ -1,8 +1,8 @@
 import React from "react";
-import Navbar from "../layout/Navbar";
-import Footer from "../layout/Footer";
-import { CartProvider } from "../context/CartContext";
-import ShoppingCartContent from "../common/ShoppingCartContent";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
+import { CartProvider } from "../components/context/CartContext";
+import ShoppingCartContent from "../components/cartShop/ShoppingCartContent";
 
 export default function ShoppingCart() {
   return (

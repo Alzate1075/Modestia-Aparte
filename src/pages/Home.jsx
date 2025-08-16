@@ -1,16 +1,16 @@
-import React from "react";
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import Navbar from "../layout/Navbar";
-import Footer from "../layout/Footer";
-import Spinner from "../../components/loading/Spinner";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
+import Spinner from "../components/common/Spinner"; // Spinner común
 
 export default function Home() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [likedImages, setLikedImages] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Mostrar spinner 1 segundo al inicio
   useEffect(() => {
     const timeout = setTimeout(() => {
       setLoading(false);
@@ -48,7 +48,6 @@ export default function Home() {
     );
   };
 
-  // ahora maneja 'left' y 'right' y usa la actualización funcional
   const scrollThumbnails = useCallback(
     (direction) => {
       setCurrentImageIndex((prev) => {
@@ -61,7 +60,7 @@ export default function Home() {
     [galleryImages.length]
   );
 
-  // navegación por teclado (flechas)
+  // navegación por teclado
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "ArrowLeft") scrollThumbnails("left");
@@ -71,8 +70,13 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKey);
   }, [scrollThumbnails]);
 
+  // Mostrar spinner mientras loading es true
   if (loading) {
-    return <Spinner />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Spinner text="Modestia Aparte" size="w-20" height="h-screen" />
+      </div>
+    );
   }
 
   return (
@@ -92,7 +96,7 @@ export default function Home() {
             <img
               src="/LogosMA/LogoMA7.png"
               alt="LogoMA"
-              className="w-[40%] h-auto"
+              className="w-[35%] h-auto"
             />
           </div>
         </section>
@@ -100,7 +104,6 @@ export default function Home() {
         {/* CARRUSEL */}
         <section className="max-w-[80%] bg-gray-200 rounded-2xl shadow-xl mx-auto px-6 py-12 my-16">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-center">
-            {/* IMAGEN MODELO */}
             <div className="lg:col-span-3 flex items-center justify-center bg-gray-300 rounded-xl p-6">
               <img
                 src={galleryImages[currentImageIndex] || "/placeholder.svg"}
@@ -109,7 +112,6 @@ export default function Home() {
               />
             </div>
 
-            {/* DESCRIPCION */}
             <div className="lg:col-span-1 flex flex-col justify-center">
               <h2 className="text-3xl font-bold mb-4">
                 {collections[currentImageIndex]?.title}
@@ -120,7 +122,7 @@ export default function Home() {
             </div>
           </div>
 
-          {/* FOTOS CARRUSEL (miniaturas) */}
+          {/* FOTOS MINIATURAS */}
           <div className="flex items-center justify-center mt-10">
             <button
               onClick={() => scrollThumbnails("left")}

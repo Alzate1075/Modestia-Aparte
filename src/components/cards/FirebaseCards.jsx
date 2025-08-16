@@ -1,8 +1,8 @@
 import React from "react";
 import { useApiFirebase } from "../../hooks/useApiFirebase";
 import { useFavorites } from "../../components/context/FavoritesContext";
-import CardContainer from "../common/CardContainer";
-import SkeletonCard from "../loading/SkeletonCard";
+import CardContainer from "./CardContainer";
+import SkeletonCard from "../common/SkeletonCard";
 import { useCart, CartProvider } from "../context/CartContext";
 
 function CardsContent({ productos, favorites, toggleFavorite }) {

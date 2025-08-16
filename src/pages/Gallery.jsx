@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import FirebaseCards from "../cards/FirebaseCards";
-import CategoryCards from "../categorias/CategoryCards";
-import { Link } from "react-router-dom";
-import Navbar from "../layout/Navbar";
-import Footer from "../layout/Footer";
-import SkeletonCard from "../loading/SkeletonCard";
+import FirebaseCards from "../components/cards/FirebaseCards";
+import CategoryCards from "../components/cards/CategoryCards";
+import Navbar from "../components/layout/Navbar";
+import Footer from "../components/layout/Footer";
+import SkeletonCard from "../components/common/SkeletonCard";
 
 const Gallery = () => {
   const [categoryFirebase, setCategoryFirebase] = useState(null);

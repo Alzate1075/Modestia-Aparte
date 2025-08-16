@@ -4,7 +4,7 @@ import { useFavorites } from "../context/FavoritesContext";
 import { Link, useNavigate } from "react-router-dom";
 import { Heart, ShoppingCart } from "lucide-react";
 import { toast } from "react-toastify";
-import FavoriteProducts from "../pages/FavoriteProducts"; // Asegúrate que esté correcto
+import FavoriteProducts from "../../pages/FavoriteProducts"; // Asegúrate que esté correcto
 import MenuBurguer from "./MenuBurguer";
 
 export default function Navbar() {
