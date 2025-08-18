@@ -24,50 +24,61 @@ export default function Navbar() {
   return (
     <>
       <nav className="fixed top-0 w-full bg-black border-b z-50 shadow-xl">
-        <div className="mx-8">
-          <div className="flex justify-between items-center h-20">
-            <Link to="/" className="flex items-center gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Contenedor adaptable: en móvil, 2 filas; en desktop, 1 fila */}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between py-3">
+            {/* FILA 1 (siempre visible): Logo + Nombre */}
+            <Link to="/" className="flex items-center gap-3">
               <img
                 src="/LogosMA/LogoMA2.2.png"
                 alt="Logo MA"
-                className="h-16"
+                className="h-12 md:h-16"
               />
-              <h1 className="text-4xl font-serif text-white">
+              <h1 className="text-2xl md:text-4xl font-serif text-white whitespace-nowrap">
                 Modestia Aparte
               </h1>
             </Link>
 
-            <div className="flex items-center space-x-4">
-              {!user ? (
+            {/* FILA 2 en móvil: izquierda Login/Usuario, derecha íconos */}
+            <div className="flex items-center justify-between md:justify-end">
+              {/* Izquierda: Login o saludo */}
+              <div className="mr-2">
+                {!user ? (
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="text-white px-4 py-2 rounded hover:bg-pink-600 transition-colors"
+                  >
+                    Log In
+                  </button>
+                ) : (
+                  <span className="text-white px-2 py-2">
+                    Hola,{" "}
+                    {user.displayName ||
+                      `${user.name || ""} ${user.lastName || ""}`}
+                  </span>
+                )}
+              </div>
+
+              {/* Derecha: Favoritos, Carrito y Menú */}
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => navigate("/login")}
-                  className="text-white px-4 py-2 rounded hover:bg-pink-600 transition-colors"
+                  onClick={handleOpenFavorites}
+                  className="hover:bg-pink-600 p-2 rounded transition-colors"
+                  aria-label="Favoritos"
                 >
-                  Log In
+                  <Heart className="h-6 w-6 text-white" />
                 </button>
-              ) : (
-                <span className="text-white px-4 py-2">
-                  Hola,{" "}
-                  {user.displayName ||
-                    `${user.name || ""} ${user.lastName || ""}`}
-                </span>
-              )}
 
-              <button
-                onClick={handleOpenFavorites}
-                className="hover:bg-pink-600 p-2 rounded transition-colors"
-              >
-                <Heart className="h-6 w-6 text-white" />
-              </button>
+                <button
+                  onClick={() => navigate("/carrito")}
+                  className="hover:bg-pink-600 p-2 rounded transition-colors"
+                  aria-label="Carrito"
+                >
+                  <ShoppingCart className="h-6 w-6 text-white" />
+                </button>
 
-              <button
-                onClick={() => navigate("/carrito")}
-                className="hover:bg-pink-600 p-2 rounded transition-colors"
-              >
-                <ShoppingCart className="h-6 w-6 text-white" />
-              </button>
-
-              <MenuBurguer />
+                <MenuBurguer />
+              </div>
             </div>
           </div>
         </div>
