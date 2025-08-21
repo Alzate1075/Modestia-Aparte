@@ -9,17 +9,17 @@ import {
 // Si tus imágenes están en /public, normalmente se usan así: "/casual-modern-outfit.png"
 const slides = [
   {
-    src: "/public/casual-modern-outfit.png",
+    src: "/casual-modern-outfit.png",
     title: "Casual Moderna",
     description: "Mantente abrigada sin sacrificar el estilo.",
   },
   {
-    src: "/public/elegant-fashion-model.png",
+    src: "/elegant-fashion-model.png",
     title: "Elegante Fashion",
     description: "Frescura y comodidad para los días soleados.",
   },
   {
-    src: "/public/elegant-night-dress.png",
+    src: "/elegant-night-dress.png",
     title: "Moda Nocturna",
     description: "Elegancia y sofisticación para tus noches especiales.",
   },
