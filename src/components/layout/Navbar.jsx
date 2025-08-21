@@ -32,7 +32,7 @@ export default function Navbar() {
               <img
                 src="/LogosMA/LogoMA2.2.png"
                 alt="Logo MA"
-                className="h-12 md:h-16"
+                className="h-12 md:h-14"
               />
               <h1 className="text-2xl md:text-4xl font-serif text-white whitespace-nowrap">
                 Modestia Aparte
@@ -40,7 +40,7 @@ export default function Navbar() {
             </Link>
 
             {/* FILA 2 en móvil: izquierda Login/Usuario, derecha íconos */}
-            <div className="flex items-center justify-between md:justify-end">
+            <div className="flex items-center justify-around md:justify-end">
               {/* Izquierda: Login o saludo */}
               <div className="mr-2">
                 {!user ? (

@@ -25,7 +25,7 @@ function CardsContent({ productos, favorites, toggleFavorite }) {
       {productos.map((producto) => (
         <div
           key={producto.id}
-          className={`rounded-xl shadow-lg overflow-hidden flex flex-col h-[450px] w-full max-w-[350px] mx-auto relative transition-colors duration-300 ${
+          className={`rounded-xl shadow-lg overflow-hidden flex flex-col h-[450px] w-full max-w-[250px] mx-auto relative transition-colors duration-300 ${
             isInCart(producto.id) ? "bg-orange-300" : "bg-white"
           }`}
         >
